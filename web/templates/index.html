@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Churn Predictor</title>
+<style>
+  :root { --bg:#f5f6fa; --card:#fff; --text:#1f2430; --muted:#6b7280; --accent:#3b5bdb; --bad:#d9480f; --good:#2b8a3e; --border:#d9dce3; --errbg:#fff3f0; --errtext:#a61e00; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14161c; --card:#1d2029; --text:#e8eaf0; --muted:#9aa1b2; --accent:#748ffc; --bad:#ff8c5a; --good:#69db7c; --border:#343848; --errbg:#3a1f18; --errtext:#ffb199; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:820px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0 0 4px; font-size:1.6rem; }
+  p.sub { margin:0 0 20px; color:var(--muted); }
+  form, .result { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+  label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:4px; }
+  select, input { width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:.95rem; }
+  button { margin-top:20px; padding:11px 22px; border:0; border-radius:8px; background:var(--accent); color:#fff; font-size:1rem; cursor:pointer; }
+  .result { margin-bottom:20px; }
+  .result h2 { margin:0 0 8px; }
+  .churn { color:var(--bad); } .stay { color:var(--good); }
+  .bar { height:10px; background:var(--border); border-radius:6px; overflow:hidden; }
+  .bar > div { height:100%; background:var(--bad); }
+  .error { background:var(--errbg); color:var(--errtext); border:1px solid var(--border); padding:12px; border-radius:8px; margin-bottom:20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Customer Churn Predictor</h1>
+  <p class="sub">Enter a customer's details to estimate the chance they will leave.</p>
+
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  {% if result %}
+  <div class="result">
+    <h2 class="{{ 'churn' if result.prediction == 'Churn' else 'stay' }}">{{ result.prediction }}</h2>
+    <p>Churn probability: <strong>{{ result.percent }}%</strong></p>
+    <div class="bar"><div style="width: {{ result.percent }}%"></div></div>
+  </div>
+  {% endif %}
+
+  <form method="post">
+    <div class="grid">
+      {% for name, opts in choices.items() %}
+      <div>
+        <label for="{{ name }}">{{ name }}</label>
+        <select id="{{ name }}" name="{{ name }}">
+          {% for o in opts %}
+            {% set value = o if o is string else o[0] %}
+            {% set text  = o if o is string else o[1] %}
+            <option value="{{ value }}" {{ 'selected' if form.get(name) == value }}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      {% for name in numeric %}
+      <div>
+        <label for="{{ name }}">{{ name }}</label>
+        <input id="{{ name }}" name="{{ name }}" type="number" step="any" min="0" required value="{{ form.get(name, '') }}">
+      </div>
+      {% endfor %}
+    </div>
+    <button type="submit">Predict</button>
+  </form>
+</main>
+</body>
+</html>
